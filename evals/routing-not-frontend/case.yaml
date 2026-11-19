@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: routing-not-frontend
+description: A backend database task loads no frontend-toolkit skill or agent.
+tags: [routing]
+runs: 1
+execution:
+  prompt: |
+    Add a Postgres migration that creates an index on orders.customer_id, and make it safe
+    to run on a live table.
+  max_turns: 1
+  allowed_tools: [Agent, Skill]
+graders:
+  - name: no-toolkit-skill
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"frontend-toolkit:'
+    min: 0
+    max: 0
+  - name: no-toolkit-agent
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"frontend-toolkit:'
+    min: 0
+    max: 0

@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.1.0: evals, a PR gate, read-only enforcement
+
+### Added
+- **Evals** (`evals/`): three routing cases (review request → `frontend-reviewer`, Figma
+  question → `ui-verifier`, backend task → neither) and one behaviour case (a `.tsx` edit in a
+  fixture app triggers the Stop gate). About USD 0.25 per run. Breaking the Stop hook makes the
+  behaviour case fail.
+- **PR gate** (opt-in, `FRONTEND_TOOLKIT_PR_GATE=on`): `gh pr create` is blocked on branches
+  that change UI files until `frontend-reviewer` has run there. A `SubagentStop` hook writes a
+  per-branch marker in the git directory. Self-check: `hooks/test-pr-review-gate.sh`.
+- **CI**: hook self-checks and `claude plugin validate` on every push; evals when a model
+  credential secret exists.
+
+### Changed
+- `ui-verifier` uses `disallowedTools: Write, Edit, NotebookEdit`, so "read-only on code" is
+  enforced while MCP tools are still inherited.
+- `ui-verification`: measurements are scoped to the component, recorded with
+  label/selector/text sample, and a "not found" entry means a wrong selector, never a missing element.
+
 ## 1.0.0: first public release
 
 Measured over a month of real use in a production React codebase, after 0.5.0:

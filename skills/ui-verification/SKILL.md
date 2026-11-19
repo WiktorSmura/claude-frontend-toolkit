@@ -61,7 +61,14 @@ design export at the root as `figma-expected.png`. Collect:
 2. **Computed styles** — width/height/padding/margin/gap/font/color of the containers and controls
    in question, via JS evaluation in the page. Most commonly skipped, and the only way to catch
    sizing and spacing differences reliably. **Required in design-diff mode**; in visual-check,
-   required whenever the change is about spacing, sizing, or layout.
+   required whenever the change is about spacing, sizing, or layout. Make the measurements
+   trustworthy:
+   - Scope every selector to the component under verification (its root, heading text or test
+     id), never a page-wide `querySelector` that can match a sibling.
+   - Record each entry as `label`, `selector`, a short `textSample` and the values, so you can see
+     it measured the element its label claims. Check that before comparing anything.
+   - A `null` or "not found" entry means the selector is wrong, not that the element is missing.
+     Fix the selector and measure again.
 3. **Structure snapshot** — accessibility/DOM tree for presence, order, and roles.
 
 Design-diff without all three is invalid — report `VERIFICATION NOT RUN` rather than a verdict.
@@ -70,6 +77,7 @@ Design-diff without all three is invalid — report `VERIFICATION NOT RUN` rathe
 computed value you need usually settles the question. Screenshot only the states the verdict rests
 on, and confirm a click landed with the structure snapshot, not another screenshot. When the
 question is one dimension, measure it and stop.
+
 These same screenshots are what a PR needs; if the repo defines a PR-screenshot workflow, reuse
 them there instead of shooting new ones.
 

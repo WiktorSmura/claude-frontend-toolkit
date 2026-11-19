@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: stop-gate-fires
+description: After editing a .tsx file with no screenshot, the Stop hook asks for browser evidence once, and the run still finishes with the edit made.
+tags: [behaviour]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: |
+    In src/App.tsx change the heading text from Welcome to Hello. That is the whole task.
+    There is no browser or dev server in this session.
+  max_turns: 12
+  timeout_seconds: 300
+  allowed_tools: [Read, Edit]
+graders:
+  - name: edit-made
+    type: regex
+    target: { source: file, path: src/App.tsx }
+    pattern: '<h1>Hello</h1>'
+  - name: gate-fired
+    type: regex
+    target: trace
+    pattern: 'UI files were edited after the last browser screenshot'

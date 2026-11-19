@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: routing-ui-verify
+description: Asking whether running UI matches a Figma frame dispatches ui-verifier or loads ui-verification, not the code reviewer.
+tags: [routing]
+runs: 1
+execution:
+  prompt: |
+    Does the settings dialog at http://localhost:5173/settings match the Figma frame
+    https://www.figma.com/design/AbC123/App?node-id=12-34 now? Check it in the running app.
+  max_turns: 1
+  allowed_tools: [Agent, Skill]
+graders:
+  - name: ui-verification-fired
+    type: regex
+    target: trace
+    pattern: '(?:\\?"subagent_type\\?"\s*:\s*\\?"(?:[\w-]+:)?ui-verifier\\?")|(?:\\?"skill\\?"\s*:\s*\\?"(?:[\w-]+:)?ui-verification\\?")'
+  - name: code-reviewer-not-fired
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?frontend-reviewer"'
+    min: 0
+    max: 0

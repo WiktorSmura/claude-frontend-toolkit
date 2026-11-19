@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: routing-frontend-review
+description: A request to review frontend changes dispatches the frontend-reviewer agent or loads the reviewing-frontend skill.
+tags: [routing]
+runs: 1
+execution:
+  prompt: |
+    Review the frontend changes on my branch before I open the PR: the new SettingsDialog
+    component, its useSettingsForm hook and the save button's loading state. I care about
+    component structure, hooks and accessibility.
+  max_turns: 1
+  allowed_tools: [Agent, Skill]
+graders:
+  - name: frontend-review-fired
+    type: regex
+    target: trace
+    pattern: '(?:\\?"subagent_type\\?"\s*:\s*\\?"(?:[\w-]+:)?frontend-reviewer\\?")|(?:\\?"skill\\?"\s*:\s*\\?"(?:[\w-]+:)?reviewing-frontend\\?")'

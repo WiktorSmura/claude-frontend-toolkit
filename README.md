@@ -11,6 +11,7 @@ that won't let a UI change end with "it compiles" as the only proof.
 | **Agent** | `frontend-reviewer`: severity-graded review of a frontend diff | nothing |
 | **Agent** | `ui-verifier`: checks the running app against a Figma node or named criteria | a browser MCP; Figma MCP for design-diff |
 | **Hook** | `Stop` gate: asks for a browser screenshot after UI files change | bash |
+| **Hook** | PR gate (opt-in): blocks `gh pr create` until `frontend-reviewer` has run on the branch | bash, git |
 | **Skills** | implementation, architecture, review, a11y, performance and verification guides | nothing |
 
 ## Install
@@ -73,6 +74,20 @@ could see the change.
 - Turn it off with `FRONTEND_TOOLKIT_UI_GATE=off`, globally in `~/.claude/settings.json`
   (`"env": {"FRONTEND_TOOLKIT_UI_GATE": "off"}`) or for one repo in `.claude/settings.local.json`.
 
+## The PR gate (opt-in)
+
+Set `FRONTEND_TOOLKIT_PR_GATE=on` (in `~/.claude/settings.json` under `"env"`, or per repo in
+`.claude/settings.local.json`) and `gh pr create` is blocked on any branch whose commits change UI
+files, until `frontend-reviewer` has run on that branch.
+
+- When the reviewer finishes, a `SubagentStop` hook writes a marker for the branch inside the git
+  directory. The marker is per worktree, never committed, and survives later commits, so fixing
+  the findings doesn't need a second review. It records that a review ran, not that it passed.
+- It follows a leading `cd <dir> &&` in the command. It's a reminder, not a lock: a
+  `gh pr create` hidden inside a script isn't seen, and anything it can't work out (no git, no
+  base branch) lets the command through.
+- To skip it once, put `FRONTEND_TOOLKIT_PR_GATE=off` in front of the command.
+
 ## The skills
 
 | Skill | Load it for |
@@ -110,10 +125,25 @@ routing and keeps those three. Details are in [CHANGELOG.md](CHANGELOG.md).
 ## Development
 
 ```
-bash hooks/test-ui-evidence-gate.sh     # hook self-check
+bash hooks/test-ui-evidence-gate.sh     # Stop gate self-check
+bash hooks/test-pr-review-gate.sh       # PR gate self-check
 claude plugin validate .                # manifest and structure
 claude --plugin-dir .                   # try it without installing
 ```
+
+**Evals** (`evals/`, run with `claude plugin eval`) check that review requests reach
+`frontend-reviewer`, Figma questions reach `ui-verifier`, backend tasks touch neither, and that
+the Stop gate fires on a real edit. The whole suite costs about USD 0.25 per run and runs on your
+own Claude credential:
+
+```
+claude plugin eval . --trust-plugin --no-publish --ablation none --scaffold \
+  --allow-tools Edit --model claude-sonnet-5-5
+```
+
+CI runs the self-checks and validation on every push, which is free on a public repo. It runs the
+evals only when the repo has an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`
+(`claude setup-token`) secret.
 
 Works on macOS and Linux. The hook needs only bash, grep, sed and sort.
 

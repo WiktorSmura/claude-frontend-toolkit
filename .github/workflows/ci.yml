@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned so a CLI release can't look like a plugin regression. Raise it deliberately.
+  CLAUDE_CODE_VERSION: 2.1.328
+
+jobs:
+  checks:
+    name: Hook self-checks and plugin validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hook self-checks
+        run: |
+          bash hooks/test-ui-evidence-gate.sh
+          bash hooks/test-pr-review-gate.sh
+      - name: Install Claude Code
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash -s "$CLAUDE_CODE_VERSION"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Validate plugin
+        run: claude plugin validate .
+
+  evals:
+    name: Routing and behaviour evals
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Model calls are billed to whoever owns the secret: an ANTHROPIC_API_KEY (pay per use) or a
+    # CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token` (subscription). Without one, the job skips.
+    steps:
+      - name: Check for credentials
+        id: creds
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Evals skipped: no ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN secret."
+          fi
+      - uses: actions/checkout@v4
+        if: steps.creds.outputs.ok == 'true'
+      - name: Install Claude Code
+        if: steps.creds.outputs.ok == 'true'
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash -s "$CLAUDE_CODE_VERSION"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Run evals
+        if: steps.creds.outputs.ok == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        # About USD 0.25 for the whole suite; the ceiling is a safety net, not a budget.
+        run: >
+          claude plugin eval . --trust-plugin --no-publish --ablation none
+          --scaffold --allow-tools Edit --model claude-sonnet-5-5 --threshold 1
+          --max-cost-usd 2 --json evals/results/ci.json --report evals/results/ci.html
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.creds.outputs.ok == 'true'
+        with:
+          name: eval-results
+          path: evals/results/

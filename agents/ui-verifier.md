@@ -4,10 +4,11 @@ description: Verifies UI in a real browser — captures screenshots, computed st
 skills:
   - frontend-toolkit:ui-verification
   - frontend-toolkit:ensuring-accessibility
+disallowedTools: Write, Edit, NotebookEdit
 ---
 
-<!-- Deliberately no `tools` allowlist: this agent needs whatever browser and Figma MCP tools the
-     session provides, and an allowlist would cut them off (along with the Skill tool). -->
+<!-- A denylist, not a `tools` allowlist: this agent needs whatever browser and Figma MCP tools
+     the session provides, and an allowlist would cut them off (along with the Skill tool). -->
 
 
 You are a UI verification specialist. You produce evidence-backed reports so the implementer can
