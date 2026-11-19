@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Hook self-checks
         run: |
           bash hooks/test-ui-evidence-gate.sh
@@ -54,7 +54,7 @@ jobs:
           else
             echo "::notice::Evals skipped: no ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN secret."
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.creds.outputs.ok == 'true'
       - name: Install Claude Code
         if: steps.creds.outputs.ok == 'true'
@@ -71,7 +71,7 @@ jobs:
           claude plugin eval . --trust-plugin --no-publish --ablation none
           --scaffold --allow-tools Edit --model claude-sonnet-5-5 --threshold 1
           --max-cost-usd 2 --json evals/results/ci.json --report evals/results/ci.html
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always() && steps.creds.outputs.ok == 'true'
         with:
           name: eval-results
