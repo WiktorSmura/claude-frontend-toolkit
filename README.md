@@ -108,6 +108,23 @@ Name a skill in a prompt or plan task to load it reliably ("use
 `frontend-toolkit:implementing-frontend`"). Claude also picks them up from their descriptions, but
 much less reliably: see [Design notes](#design-notes).
 
+## Is it working? Measure it
+
+```
+python3 scripts/usage-report.py --since 2026-01-01
+```
+
+Reads your Claude Code transcripts (`~/.claude/projects`), locally and read-only, and reports:
+
+- how many sessions edited UI files, and how many of those ended with a browser screenshot after
+  the last edit (the same test the Stop gate applies);
+- how often each gate blocked;
+- which toolkit agents ran and which skills loaded, per project.
+
+Run it before installing to get a baseline, then a few weeks later. If the evidence rate and the
+agent runs don't move, the toolkit isn't earning its keep in your setup. Use `--json` for the raw
+numbers.
+
 ## Your repo wins
 
 Your `CLAUDE.md`, `AGENTS.md`, in-repo skills and existing code override every default here. The
@@ -127,6 +144,7 @@ routing and keeps those three. Details are in [CHANGELOG.md](CHANGELOG.md).
 ```
 bash hooks/test-ui-evidence-gate.sh     # Stop gate self-check
 bash hooks/test-pr-review-gate.sh       # PR gate self-check
+python3 -m unittest discover -s scripts  # usage report self-check
 claude plugin validate .                # manifest and structure
 claude --plugin-dir .                   # try it without installing
 ```

@@ -1,3 +1,4 @@
 .DS_Store
 .ui-verification/
 evals/results/
+__pycache__/

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0: measure it
+
+### Added
+- `scripts/usage-report.py`: reads your Claude Code transcripts, locally and read-only, and reports
+  how many UI-editing sessions ended with a screenshot after the last edit, how often each gate
+  blocked, and which toolkit agents and skills ran, per project. It is the scan behind the
+  1.0.0 numbers, made repeatable. It counts only the harness's own hook messages, not tool output
+  that quotes them. Self-check: `python3 -m unittest discover -s scripts`, also run in CI.
+
 ## 1.1.0: evals, a PR gate, read-only enforcement
 
 ### Added
