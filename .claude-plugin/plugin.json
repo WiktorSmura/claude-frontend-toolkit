@@ -1,0 +1,20 @@
+{
+  "name": "frontend-toolkit",
+  "description": "Frontend code-review and browser UI-verification agents, a Stop hook that asks for browser evidence after UI edits, and React frontend skills.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Wiktor Smura"
+  },
+  "homepage": "https://github.com/WiktorSmura/claude-frontend-toolkit",
+  "repository": "https://github.com/WiktorSmura/claude-frontend-toolkit",
+  "license": "MIT",
+  "keywords": [
+    "frontend",
+    "react",
+    "code-review",
+    "ui-verification",
+    "figma",
+    "accessibility",
+    "hooks"
+  ]
+}

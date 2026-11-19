@@ -1,0 +1,13 @@
+{
+  "name": "frontend-toolkit",
+  "owner": {
+    "name": "Wiktor Smura"
+  },
+  "plugins": [
+    {
+      "name": "frontend-toolkit",
+      "source": "./",
+      "description": "Frontend code-review and browser UI-verification agents, a Stop hook that asks for browser evidence after UI edits, and React frontend skills."
+    }
+  ]
+}
